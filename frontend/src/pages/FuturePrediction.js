@@ -1,13 +1,16 @@
- import React, { useState } from 'react';
+import React, { useState } from 'react';
 
-// 🔥 NEW: Helper function to turn "2026-06-19 15:00:00" into "3:00 PM"
+// ⚙️ Change this URL to your active Ngrok link if it ever updates
+const API_BASE_URL = "https://stinking-bondless-worrier.ngrok-free.dev";
+
+// 🔥 Helper function to turn "2026-06-19 15:00:00" into "3:00 PM"
 const formatForecastTime = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-// 🔥 NEW: Helper to format the date
+// 🔥 Helper to format the date
 const formatForecastDate = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -28,7 +31,14 @@ function FuturePrediction({ beachName }) {
 
     const formatted = selectedDateTime.replace("T", " ");
 
-    fetch(`http://127.0.0.1:5000/predict?beach=${encodeURIComponent(beachName)}&datetime=${formatted}`)
+    // ✅ FIXED: Using API_BASE_URL with ngrok bypass header
+    fetch(`${API_BASE_URL}/predict?beach=${encodeURIComponent(beachName)}&datetime=${encodeURIComponent(formatted)}`, {
+      method: 'GET',
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        'Content-Type': 'application/json'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -86,7 +96,6 @@ function FuturePrediction({ beachName }) {
             <div style={styles.conditionBadge}>
               Predicted Condition: {predictionData.rating}
             </div>
-            {/* 🔥 NEW: A small explainer text for the user so they know why the time shifted! */}
             <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '10px' }}>
               *Showing the closest available forecast interval.
             </p>
@@ -98,7 +107,6 @@ function FuturePrediction({ beachName }) {
               <p style={styles.statValue}>{predictionData.bsi}</p>
             </div>
 
-            {/* 🔥 UPDATED: Cleaned up the Date and Time display */}
             <div style={styles.statBox}>
               <strong style={styles.label}>Forecast Time</strong>
               <p style={styles.statValue}>{formatForecastTime(predictionData.time)}</p>

@@ -44,7 +44,8 @@ function MyReviews({ onBackToHome }) {
         
         const token = await user.getIdToken();
 
-        const response = await fetch('http://127.0.0.1:5000/get_my_reviews', {
+        // 🚨 REPLACE THE URL BELOW WITH YOUR LIVE RENDER URL! 🚨
+         const response = await fetch('https://beachbuddy-api.onrender.com/get_my_reviews', {
           headers: {
             'Authorization': `Bearer ${token}` 
           }

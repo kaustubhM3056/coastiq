@@ -166,41 +166,67 @@ def get_forecast(beach):
         return jsonify([])
 
 # --- SMART FUTURE PREDICTION ---
-@app.route('/predict')
+@app.route('/predict', methods=['GET'])
 def predict():
     beach = request.args.get('beach')
     user_time = request.args.get('datetime')
 
+    # 1. Check for missing query parameters
     if not beach or not user_time:
-        return jsonify({"error": "Missing input"}), 400
+        return jsonify({"error": "Missing input parameters. 'beach' and 'datetime' are required."}), 400
 
     search_key = beach.lower()
     location_data = BEACH_LOCATIONS.get(search_key)
 
     if not location_data:
-        return jsonify({"error": "Beach not found"}), 404
+        return jsonify({"error": f"Beach '{beach}' not found."}), 404
 
     lat = location_data["lat"]
     lon = location_data["lon"]
-
     weather_key = os.getenv("OPENWEATHER_API_KEY")
 
-    try:
-        user_dt = datetime.strptime(user_time, "%Y-%m-%d %H:%M")
-        now = datetime.now()
+    # 2. Supported date formats (handles 12-hr AM/PM, 24-hr, and HTML5 inputs)
+    date_formats = [
+        "%Y-%m-%d %H:%M",      # 2026-08-14 18:11
+        "%d-%m-%Y %I:%M %p",   # 14-08-2026 06:11 PM
+        "%d-%m-%Y %H:%M",      # 14-08-2026 18:11
+        "%Y-%m-%dT%H:%M",      # 2026-08-14T18:11 (HTML5 datetime-local)
+        "%Y-%m-%d %H:%M:%S"    # 2026-08-14 18:11:00
+    ]
 
-        if user_dt <= now:
-            return jsonify({"error": "⚠️ Please select a future time"}), 400
+    user_dt = None
+    for fmt in date_formats:
+        try:
+            user_dt = datetime.strptime(user_time.strip(), fmt)
+            break
+        except ValueError:
+            continue
 
-        if user_dt > now + timedelta(days=7):
-            return jsonify({"error": "⚠️ Only 7-day prediction available"}), 400
+    if not user_dt:
+        return jsonify({"error": "Invalid date format. Received: " + str(user_time)}), 400
 
-    except:
-        return jsonify({"error": "Invalid date format"}), 400
+    # 3. Date range validation
+    now = datetime.now()
+    if user_dt <= now:
+        return jsonify({"error": "⚠️ Please select a future time"}), 400
 
+    if user_dt > now + timedelta(days=7):
+        return jsonify({"error": "⚠️ Only 7-day prediction available"}), 400
+
+    # 4. Fetch OpenWeather forecast data
     url = f"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={weather_key}&units=metric"
-    data = requests.get(url).json()
+    
+    try:
+        response = requests.get(url)
+        data = response.json()
+    except Exception as e:
+        return jsonify({"error": "Failed to connect to weather API"}), 500
 
+    # Safety check if OpenWeather API returned an error or bad key response
+    if "list" not in data:
+        return jsonify({"error": data.get("message", "Weather data unavailable")}), 400
+
+    # 5. Find the closest forecast interval
     closest = None
     min_diff = float('inf')
 
@@ -213,15 +239,17 @@ def predict():
             closest = item
 
     if not closest:
-        return jsonify({"error": "No data found"}), 404
+        return jsonify({"error": "No matching forecast data found"}), 404
 
+    # 6. Process metrics & calculate BSI
     temp = closest["main"]["temp"]
-    wind = closest["wind"]["speed"] * 3.6
+    wind = closest["wind"]["speed"] * 3.6  # Convert m/s to km/h
     rain = closest.get("rain", {}).get("3h", 0)
-    tide_height = 1.0
+    tide_height = 1.0  # Baseline tide default
 
     result = calculate_bsi(temp, wind, rain, tide_height)
 
+    # 7. Return JSON response
     return jsonify({
         "time": closest["dt_txt"],
         "temp": round(temp, 1),
