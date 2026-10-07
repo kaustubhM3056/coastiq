@@ -90,7 +90,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
                     style={styles.travelBtn}
                     onClick={() => window.open(`https://www.redbus.in/bus-tickets/${encodeURIComponent(bsiData.city)}`, '_blank')}
                   >
-                    🚌 By Road
+                    By Road
                   </button>
 
                   {/* By Train (IRCTC) */}
@@ -98,7 +98,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
                     style={styles.travelBtn}
                     onClick={() => window.open('https://www.irctc.co.in', '_blank')}
                   >
-                    🚆 By Train
+                     By Train
                   </button>
 
                   {/* By Air (Google Flights Auto-Search) */}
@@ -106,12 +106,12 @@ function BeachDetails({ bsiData, onBackToHome }) {
                     style={styles.travelBtn}
                     onClick={() => window.open(`https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(bsiData.city)}`, '_blank')}
                   >
-                    ✈️ By Air
+                     By Air
                   </button>
                   
                 </div>
               </div>
-              {/* 👆 End of Travel Booking Options */}
+              {/* End of Travel Booking Options */}
 
             </div>
           )}
@@ -130,7 +130,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
                   }}
                   style={showWriteReview ? styles.cancelButton : styles.actionButton}
                 >
-                  {showWriteReview ? "Cancel" : "✍️ Write a Review"}
+                  {showWriteReview ? "Cancel" : " Write a Review"}
                 </button>
 
                 <button 
