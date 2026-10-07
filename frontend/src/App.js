@@ -17,23 +17,23 @@ function LoadingSpinner() {
 }
 
 function App() {
-   const [beachSearch, setBeachSearch] = useState("Baga Beach");
-const [bsiData, setBsiData] = useState(null);
-const [loading, setLoading] = useState(false);
+  const [beachSearch, setBeachSearch] = useState("Baga Beach");
+  const [bsiData, setBsiData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-// We only use setForecast, so ignore the first variable
-const [, setForecast] = useState([]);
+  // We only use setForecast, so ignore the first variable
+  const [, setForecast] = useState([]);
 
-const [leaderboard, setLeaderboard] = useState([]);
-const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
 
-const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
 
-// We only use setShowReviewForm, so ignore the first variable
-const [, setShowReviewForm] = useState(false);
+  // We only use setShowReviewForm, so ignore the first variable
+  const [, setShowReviewForm] = useState(false);
 
-const [viewMode, setViewMode] = useState('home');
-const [currentPage, setCurrentPage] = useState("home");
+  const [viewMode, setViewMode] = useState('home');
+  const [currentPage, setCurrentPage] = useState("home");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -46,7 +46,7 @@ const [currentPage, setCurrentPage] = useState("home");
 
   useEffect(() => {
     const fetchLeaderboard = () => {
-        fetch('https://beachbuddy-api.onrender.com/leaderboard')
+      fetch('https://beachbuddy-api.onrender.com/leaderboard')
         .then(res => res.json())
         .then(data => {
           setLeaderboard(data); 
@@ -72,7 +72,7 @@ const [currentPage, setCurrentPage] = useState("home");
     setForecast([]);
     setShowReviewForm(false); 
     
-      fetch(`https://beachbuddy-api.onrender.com/bsi?beach=${encodeURIComponent(beachSearch)}`)
+    fetch(`https://beachbuddy-api.onrender.com/bsi?beach=${encodeURIComponent(beachSearch)}`)
       .then(response => response.json())
       .then(data => {
         if (data.error) {
@@ -83,12 +83,12 @@ const [currentPage, setCurrentPage] = useState("home");
 
           // ✅ FORECAST
           fetch(`https://beachbuddy-api.onrender.com/forecast/${encodeURIComponent(beachSearch)}`)
-          .then(res => res.json())
-          .then(data => {
-           console.log("FORECAST:", data);
-           setForecast(data);
-           })
-           .catch(err => console.error("Forecast error:", err)); 
+            .then(res => res.json())
+            .then(data => {
+              console.log("FORECAST:", data);
+              setForecast(data);
+            })
+            .catch(err => console.error("Forecast error:", err)); 
 
           if (data.rain_mm > 1) {
             alert(`🌧️ RAIN ALERT for ${data.city}!\n\nIt is currently raining.`);
@@ -121,8 +121,9 @@ const [currentPage, setCurrentPage] = useState("home");
       
       {/* Navbar sitting above the hero */}
       <div className="header-top-row" style={{ padding: '20px 40px', background: '#2c3e50', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <h1 style={{ cursor: 'pointer', margin: 0, color: 'white', fontSize: '24px' }} onClick={() => setCurrentPage('home')}>
-          🌊 BeachBuddy India
+        {/* 🌊 Rebranded Header to CoastIQ */}
+        <h1 style={{ cursor: 'pointer', margin: 0, color: 'white', fontSize: '24px', fontWeight: '800' }} onClick={() => setCurrentPage('home')}>
+          🌊 CoastIQ
         </h1>
         <div className="header-buttons">
           <button onClick={() => setViewMode('profile')} className="profile-button" style={{ marginRight: '10px' }}>
@@ -159,7 +160,7 @@ const [currentPage, setCurrentPage] = useState("home");
               Discover India's Best Beaches
             </h1>
             <p style={{ color: '#f0f0f0', fontSize: '1.4rem', marginBottom: '40px', textShadow: '1px 2px 4px rgba(0,0,0,0.5)' }}>
-              Live conditions, AI predictions, and community reviews.
+              Live conditions, AI predictions, and community reviews with CoastIQ.
             </p>
 
             {/* Glassmorphism Search Console */}

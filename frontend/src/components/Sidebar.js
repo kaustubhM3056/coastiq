@@ -1,18 +1,23 @@
- import React from 'react';
+import React from 'react';
 
 function Sidebar({ activeTab, setActiveTab, onBackToHome }) {
-   const menuItems = [
-    { id: 'overview', label: 'Overview'  },
-    { id: 'nearby', label: 'Nearby Places'  }, // 🔥 Added this here!
-    { id: 'photos', label: 'Photos'  },
-    { id: 'ai', label: 'Beach AI Chat'  },
-    { id: 'prediction', label: 'Future Prediction'  },
-    { id: 'map', label: 'Map' },
-    { id: 'reviews', label: 'Community Reviews'  }
+  const menuItems = [
+    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'nearby', label: 'Nearby Places', icon: '📍' },
+    { id: 'photos', label: 'Photos', icon: '📸' },
+    { id: 'ai', label: 'Beach AI Chat', icon: '🤖' },
+    { id: 'prediction', label: 'Future Prediction', icon: '🔮' },
+    { id: 'map', label: 'Map', icon: '🗺️' },
+    { id: 'reviews', label: 'Community Reviews', icon: '💬' }
   ];
 
   return (
     <div style={styles.sidebar}>
+      {/* 🌊 Brand Header */}
+      <div style={styles.brandContainer}>
+        <h2 style={styles.brandTitle}>🌊 CoastIQ</h2>
+      </div>
+
       <h3 style={styles.title}>Menu</h3>
       
       <button onClick={onBackToHome} style={styles.homeButton}>
@@ -57,12 +62,23 @@ const styles = {
     position: 'sticky',
     top: '40px'
   },
+  brandContainer: {
+    textAlign: 'center',
+    marginBottom: '10px'
+  },
+  brandTitle: {
+    color: '#ffffff',
+    margin: 0,
+    fontSize: '24px',
+    fontWeight: '800',
+    letterSpacing: '1px'
+  },
   title: {
     color: 'rgba(255,255,255,0.7)',
     margin: '0 0 10px 0',
     textTransform: 'uppercase',
     letterSpacing: '2px',
-    fontSize: '14px',
+    fontSize: '12px',
     textAlign: 'center'
   },
   homeButton: {
@@ -92,7 +108,9 @@ const styles = {
     transition: 'all 0.2s ease',
     fontSize: '16px',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    border: 'none',
+    outline: 'none'
   }
 };
 
