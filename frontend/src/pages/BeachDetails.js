@@ -1,4 +1,4 @@
- import React, { useState } from "react";
+import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Overview from "../components/Overview";
 import BeachAI from "../BeachAI"; 
@@ -79,6 +79,40 @@ function BeachDetails({ bsiData, onBackToHome }) {
               <div style={{ borderRadius: '16px', overflow: 'hidden', zIndex: 0, position: 'relative' }}>
                 <MapView lat={bsiData.lat} lon={bsiData.lon} name={bsiData.city} />
               </div>
+
+              {/* 🚀 NEW: Travel & Ticket Booking Options */}
+              <div style={styles.bookingContainer}>
+                <span style={styles.bookingTitle}>🎫 Book Travel to {bsiData.city}:</span>
+                <div style={styles.buttonGroup}>
+                  
+                  {/* By Road (RedBus) */}
+                  <button 
+                    style={styles.travelBtn}
+                    onClick={() => window.open(`https://www.redbus.in/bus-tickets/${encodeURIComponent(bsiData.city)}`, '_blank')}
+                  >
+                    🚌 By Road
+                  </button>
+
+                  {/* By Train (IRCTC) */}
+                  <button 
+                    style={styles.travelBtn}
+                    onClick={() => window.open('https://www.irctc.co.in', '_blank')}
+                  >
+                    🚆 By Train
+                  </button>
+
+                  {/* By Air (Google Flights Auto-Search) */}
+                  <button 
+                    style={styles.travelBtn}
+                    onClick={() => window.open(`https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(bsiData.city)}`, '_blank')}
+                  >
+                    ✈️ By Air
+                  </button>
+                  
+                </div>
+              </div>
+              {/* 👆 End of Travel Booking Options */}
+
             </div>
           )}
 
@@ -209,6 +243,46 @@ const styles = {
     fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
+  },
+  // 🔥 NEW STYLES FOR THE BOOKING BAR
+  bookingContainer: {
+    background: 'rgba(255, 255, 255, 0.08)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    borderRadius: '16px',
+    padding: '16px 20px',
+    marginTop: '25px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: '15px'
+  },
+  bookingTitle: {
+    color: '#ffffff',
+    fontSize: '16px',
+    fontWeight: '600',
+    letterSpacing: '0.5px'
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap'
+  },
+  travelBtn: {
+    padding: '10px 18px',
+    borderRadius: '10px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 168, 255, 0.2)',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px'
   }
 };
 
