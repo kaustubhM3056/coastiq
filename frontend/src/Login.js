@@ -40,8 +40,8 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-box">
-        {/* Use your app title */}
-        <h1>🏖️ BeachBuddy India</h1>
+        {/* 🌊 Rebranded Header */}
+        <h1>🌊 CoastIQ</h1>
         <h2>{isLogin ? 'Log In' : 'Sign Up'}</h2>
         
         <form onSubmit={handleSubmit}>
@@ -82,4 +82,4 @@ function Login() {
   );
 }
 
-export default Login; 
+export default Login;
