@@ -10,7 +10,7 @@ import ReviewForm from "../ReviewForm";
 import NearbyPlaces from "../components/NearbyPlaces";
 import Photos from '../components/Photos';
 
-// 🔥 NEW HACKATHON FEATURE IMPORTS
+// Hackathon Feature Imports
 import LiveWeatherWidget from "../components/LiveWeatherWidget";
 import EmergencySOS from "../components/EmergencySOS";
 import CrowdCleanlinessRadar from "../components/CrowdCleanlinessRadar";
@@ -66,7 +66,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
         {/* RIGHT SIDE: Dynamic Content */}
         <div style={{ flex: 1 }}>
           
-          {/* 🔥 Smart CoastIQ Dashboard */}
+          {/* Smart CoastIQ Dashboard Widgets */}
           <LiveWeatherWidget lat={bsiData.lat} lon={bsiData.lon} />
           <CrowdCleanlinessRadar beachName={bsiData.city} />
           <SmartPackingList beachName={bsiData.city} />
@@ -157,9 +157,12 @@ function BeachDetails({ bsiData, onBackToHome }) {
               {showWriteReview && (
                 <div style={styles.innerGlassPanel}>
                   <h3 style={{ marginTop: 0, color: 'white', marginBottom: '15px' }}>Submit Your Review</h3>
-                  {/* 🔥 Connected ReviewForm with Geofencing */}
+                  
+                  {/* Connected ReviewForm passing lat and lon for Geofencing */}
                   <ReviewForm 
                     beachName={bsiData.city} 
+                    lat={bsiData.lat}
+                    lon={bsiData.lon}
                     onReviewSubmitted={() => {
                       setShowWriteReview(false);
                       setShowReviews(true);
