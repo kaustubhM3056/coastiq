@@ -8,7 +8,11 @@ import AverageRatings from "../AverageRatings";
 import ReviewList from "../ReviewList";
 import ReviewForm from "../ReviewForm";
 import NearbyPlaces from "../components/NearbyPlaces";
-import Photos from '../components/Photos';
+import Photos from '../components/Photos'; 
+import LiveWeatherWidget from "../components/LiveWeatherWidget";
+import EmergencySOS from "../components/EmergencySOS";
+import CrowdCleanlinessRadar from "../components/CrowdCleanlinessRadar";
+import SmartPackingList from "../components/SmartPackingList";
 
 function BeachDetails({ bsiData, onBackToHome }) {
   const [activeTab, setActiveTab] = useState("overview");
@@ -30,10 +34,14 @@ function BeachDetails({ bsiData, onBackToHome }) {
       justifyContent: 'center'
     }}>
       
+      {/* Background Overlay */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(15, 23, 42, 0.65)', zIndex: 1
       }}></div>
+
+      {/* 🔥 NEW: Floating SOS Widget (Sits in bottom right corner) */}
+      <EmergencySOS beachName={bsiData.city} lat={bsiData.lat} lon={bsiData.lon} />
 
       <div style={{ 
         display: 'flex', 
@@ -56,12 +64,16 @@ function BeachDetails({ bsiData, onBackToHome }) {
         {/* RIGHT SIDE: Dynamic Content */}
         <div style={{ flex: 1 }}>
           
+          {/* 🔥 NEW: Smart CoastIQ Dashboard */}
+          <LiveWeatherWidget lat={bsiData.lat} lon={bsiData.lon} />
+          <CrowdCleanlinessRadar beachName={bsiData.city} />
+          <SmartPackingList beachName={bsiData.city} />
+          
+          {/* Main Tab Content */}
           {activeTab === "overview" && <Overview bsiData={bsiData} />}
           
-          {/* The Nearby Places Tab */}
           {activeTab === "nearby" && <NearbyPlaces beachName={bsiData.city} />}
           
-          {/* 🔥 NEW PHOTOS TAB (Now using our dedicated component & backend data!) */}
           {activeTab === "photos" && <Photos bsiData={bsiData} />}
           
           {activeTab === "ai" && (
@@ -80,12 +92,11 @@ function BeachDetails({ bsiData, onBackToHome }) {
                 <MapView lat={bsiData.lat} lon={bsiData.lon} name={bsiData.city} />
               </div>
 
-              {/* 🚀 NEW: Travel & Ticket Booking Options */}
+              {/* Travel & Ticket Booking Options */}
               <div style={styles.bookingContainer}>
-                <span style={styles.bookingTitle}>🎫 Book Travel to {bsiData.city}:</span>
+                <span style={styles.bookingTitle}>Book Travel to {bsiData.city}:</span>
                 <div style={styles.buttonGroup}>
                   
-                  {/* By Road (RedBus) */}
                   <button 
                     style={styles.travelBtn}
                     onClick={() => window.open(`https://www.redbus.in/bus-tickets/${encodeURIComponent(bsiData.city)}`, '_blank')}
@@ -93,25 +104,22 @@ function BeachDetails({ bsiData, onBackToHome }) {
                     By Road
                   </button>
 
-                  {/* By Train (IRCTC) */}
                   <button 
                     style={styles.travelBtn}
                     onClick={() => window.open('https://www.irctc.co.in', '_blank')}
                   >
-                     By Train
+                    By Train
                   </button>
 
-                  {/* By Air (Google Flights Auto-Search) */}
                   <button 
                     style={styles.travelBtn}
                     onClick={() => window.open(`https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(bsiData.city)}`, '_blank')}
                   >
-                     By Air
+                    By Air
                   </button>
                   
                 </div>
               </div>
-              {/* End of Travel Booking Options */}
 
             </div>
           )}
@@ -130,7 +138,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
                   }}
                   style={showWriteReview ? styles.cancelButton : styles.actionButton}
                 >
-                  {showWriteReview ? "Cancel" : " Write a Review"}
+                  {showWriteReview ? "Cancel" : "Write a Review"}
                 </button>
 
                 <button 
@@ -244,7 +252,6 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.3s ease'
   },
-  // 🔥 NEW STYLES FOR THE BOOKING BAR
   bookingContainer: {
     background: 'rgba(255, 255, 255, 0.08)',
     backdropFilter: 'blur(12px)',
