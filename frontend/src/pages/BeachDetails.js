@@ -8,7 +8,9 @@ import AverageRatings from "../AverageRatings";
 import ReviewList from "../ReviewList";
 import ReviewForm from "../ReviewForm";
 import NearbyPlaces from "../components/NearbyPlaces";
-import Photos from '../components/Photos'; 
+import Photos from '../components/Photos';
+
+// 🔥 NEW HACKATHON FEATURE IMPORTS
 import LiveWeatherWidget from "../components/LiveWeatherWidget";
 import EmergencySOS from "../components/EmergencySOS";
 import CrowdCleanlinessRadar from "../components/CrowdCleanlinessRadar";
@@ -40,7 +42,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
         backgroundColor: 'rgba(15, 23, 42, 0.65)', zIndex: 1
       }}></div>
 
-      {/* 🔥 NEW: Floating SOS Widget (Sits in bottom right corner) */}
+      {/* Floating SOS Widget (Sits in bottom right corner) */}
       <EmergencySOS beachName={bsiData.city} lat={bsiData.lat} lon={bsiData.lon} />
 
       <div style={{ 
@@ -64,7 +66,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
         {/* RIGHT SIDE: Dynamic Content */}
         <div style={{ flex: 1 }}>
           
-          {/* 🔥 NEW: Smart CoastIQ Dashboard */}
+          {/* 🔥 Smart CoastIQ Dashboard */}
           <LiveWeatherWidget lat={bsiData.lat} lon={bsiData.lon} />
           <CrowdCleanlinessRadar beachName={bsiData.city} />
           <SmartPackingList beachName={bsiData.city} />
@@ -155,6 +157,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
               {showWriteReview && (
                 <div style={styles.innerGlassPanel}>
                   <h3 style={{ marginTop: 0, color: 'white', marginBottom: '15px' }}>Submit Your Review</h3>
+                  {/* 🔥 Connected ReviewForm with Geofencing */}
                   <ReviewForm 
                     beachName={bsiData.city} 
                     onReviewSubmitted={() => {
