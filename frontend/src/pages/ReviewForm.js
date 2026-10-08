@@ -1,67 +1,86 @@
 import React, { useState, useEffect } from 'react';
 
-const ReviewForm = ({ beachName, onReviewSubmitted }) => {
+const ReviewForm = ({ beachName, lat, lon, onReviewSubmitted }) => {
   const [locationStatus, setLocationStatus] = useState('checking'); // checking, failed, verified
+  const [distanceKm, setDistanceKm] = useState(null);
   const [crowdLevel, setCrowdLevel] = useState(50);
   const [cleanlinessLevel, setCleanlinessLevel] = useState(50);
   const [comment, setComment] = useState("");
 
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
   useEffect(() => {
-    // 1. Trigger the actual browser GPS prompt
+    console.log("Checking geolocation for beach:", beachName, lat, lon);
+    
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // 2. We intentionally simulate a Geofence Failure for the hackathon demo
-          // This proves to the judges that remote/fake reviews are blocked.
-          setTimeout(() => {
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+
+          if (!lat || !lon) {
+            // If props are missing, fail safe
             setLocationStatus('failed');
-          }, 1500);
+            setDistanceKm(999);
+            return;
+          }
+
+          const dist = calculateDistance(userLat, userLon, lat, lon);
+          setDistanceKm(Math.round(dist));
+          console.log("Calculated distance from user to beach:", Math.round(dist), "km");
+
+          // STRICT CHECK: Must be within 5 kilometers
+          if (dist > 5) {
+            setLocationStatus('failed');
+          } else {
+            setLocationStatus('verified');
+          }
         },
         (error) => {
-          // If user denies GPS
+          console.error("Geolocation error:", error);
+          // If user blocks location or it fails, BLOCK them for security demonstration
           setLocationStatus('failed');
-        }
+          setDistanceKm(null);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
       );
     } else {
       setLocationStatus('failed');
     }
-  }, []);
+  }, [lat, lon, beachName]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In production, this pushes the crowd/cleanliness data to Firebase
     onReviewSubmitted();
-  };
-
-  const getCrowdLabel = (val) => {
-    if (val > 75) return "High (Packed)";
-    if (val > 40) return "Moderate";
-    return "Low (Empty)";
-  };
-
-  const getCleanlinessLabel = (val) => {
-    if (val > 80) return "Pristine";
-    if (val > 50) return "Average";
-    return "Needs Cleaning";
   };
 
   return (
     <div style={styles.container}>
       
-      {/* STATE 1: Checking GPS */}
+      {/* STATE 1: Checking */}
       {locationStatus === 'checking' && (
         <div style={styles.statusBox}>
           <div style={styles.loadingPulse}></div>
-          <span style={styles.statusText}>Acquiring GPS Signal & Verifying Geofence...</span>
+          <span style={styles.statusText}>Verifying GPS Coordinates & Geofence...</span>
         </div>
       )}
 
-      {/* STATE 2: Geofence Blocked (Security feature shown to judges) */}
+      {/* STATE 2: Blocked by Geofence */}
       {locationStatus === 'failed' && (
         <div style={styles.errorBox}>
           <h4 style={styles.errorTitle}>Geofence Verification Failed</h4>
           <p style={styles.errorText}>
-            Security Protocol: You must be within a 2km radius of {beachName} to submit a live crowd or cleanliness report. Fake or remote reviews are strictly prohibited.
+            Security Protocol: You are <strong style={{color: '#ff3b30'}}>{distanceKm !== null ? `${distanceKm} km` : 'too far'}</strong> away from {beachName}. To prevent spam and fake data, live reports require you to be within 5km of the coast.
           </p>
           <button 
             style={styles.bypassBtn} 
@@ -72,48 +91,38 @@ const ReviewForm = ({ beachName, onReviewSubmitted }) => {
         </div>
       )}
 
-      {/* STATE 3: Verified & Form Unlocked */}
+      {/* STATE 3: Unlocked */}
       {locationStatus === 'verified' && (
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.successBox}>
-            <span style={styles.successText}>Location Verified: You are in the allowed zone.</span>
+            <span style={styles.successText}>GPS Verified: Within allowed range of {beachName}.</span>
           </div>
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>
-              Live Crowd Level: <span style={styles.dynamicLabel}>{getCrowdLabel(crowdLevel)} ({crowdLevel}%)</span>
+              Live Crowd Level: <span style={styles.dynamicLabel}>{crowdLevel}%</span>
             </label>
             <input 
-              type="range" 
-              min="0" max="100" 
-              value={crowdLevel} 
-              onChange={(e) => setCrowdLevel(e.target.value)}
-              style={styles.slider}
+              type="range" min="0" max="100" value={crowdLevel} 
+              onChange={(e) => setCrowdLevel(e.target.value)} style={styles.slider}
             />
           </div>
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>
-              Live Cleanliness: <span style={styles.dynamicLabel}>{getCleanlinessLabel(cleanlinessLevel)} ({cleanlinessLevel}%)</span>
+              Live Cleanliness: <span style={styles.dynamicLabel}>{cleanlinessLevel}%</span>
             </label>
             <input 
-              type="range" 
-              min="0" max="100" 
-              value={cleanlinessLevel} 
-              onChange={(e) => setCleanlinessLevel(e.target.value)}
-              style={styles.slider}
+              type="range" min="0" max="100" value={cleanlinessLevel} 
+              onChange={(e) => setCleanlinessLevel(e.target.value)} style={styles.slider}
             />
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Additional Comments</label>
+            <label style={styles.label}>Comments / Observations</label>
             <textarea 
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Any specific safety hazards or notes?"
-              style={styles.textarea}
-              rows="3"
-              required
+              value={comment} onChange={(e) => setComment(e.target.value)}
+              placeholder="Report specific conditions..." style={styles.textarea} rows="3" required
             />
           </div>
 
@@ -127,116 +136,42 @@ const ReviewForm = ({ beachName, onReviewSubmitted }) => {
 };
 
 const styles = {
-  container: {
-    width: '100%',
-    color: '#ffffff'
-  },
+  container: { width: '100%', color: '#ffffff' },
   statusBox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    padding: '20px',
-    backgroundColor: 'rgba(0, 168, 255, 0.1)',
-    border: '1px solid rgba(0, 168, 255, 0.3)',
-    borderRadius: '12px'
+    display: 'flex', alignItems: 'center', gap: '15px', padding: '20px',
+    backgroundColor: 'rgba(0, 168, 255, 0.1)', border: '1px solid rgba(0, 168, 255, 0.3)', borderRadius: '12px'
   },
   loadingPulse: {
-    width: '12px',
-    height: '12px',
-    backgroundColor: '#00a8ff',
-    borderRadius: '50%',
-    animation: 'pulse 1.5s infinite'
+    width: '12px', height: '12px', backgroundColor: '#00a8ff', borderRadius: '50%', animation: 'pulse 1.5s infinite'
   },
-  statusText: {
-    fontSize: '15px',
-    fontWeight: '600',
-    color: '#00a8ff'
-  },
+  statusText: { fontSize: '15px', fontWeight: '600', color: '#00a8ff' },
   errorBox: {
-    padding: '20px',
-    backgroundColor: 'rgba(255, 59, 48, 0.1)',
-    border: '1px solid rgba(255, 59, 48, 0.4)',
-    borderRadius: '12px',
-    textAlign: 'center'
+    padding: '20px', backgroundColor: 'rgba(255, 59, 48, 0.1)', border: '1px solid rgba(255, 59, 48, 0.4)',
+    borderRadius: '12px', textAlign: 'center'
   },
-  errorTitle: {
-    color: '#ff3b30',
-    marginTop: 0,
-    marginBottom: '10px',
-    fontSize: '18px'
-  },
-  errorText: {
-    color: '#e0e0e0',
-    fontSize: '14px',
-    lineHeight: '1.5',
-    marginBottom: '20px'
-  },
+  errorTitle: { color: '#ff3b30', marginTop: 0, marginBottom: '10px', fontSize: '18px' },
+  errorText: { color: '#e0e0e0', fontSize: '14px', lineHeight: '1.5', marginBottom: '20px' },
   bypassBtn: {
-    backgroundColor: 'transparent',
-    color: '#a0a0a0',
-    border: '1px solid #a0a0a0',
-    padding: '8px 16px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '12px',
-    transition: 'all 0.3s'
+    backgroundColor: 'transparent', color: '#a0a0a0', border: '1px solid #a0a0a0',
+    padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px'
   },
   successBox: {
-    padding: '12px',
-    backgroundColor: 'rgba(46, 213, 115, 0.1)',
-    border: '1px solid rgba(46, 213, 115, 0.4)',
-    borderRadius: '8px',
-    marginBottom: '25px',
-    textAlign: 'center'
+    padding: '12px', backgroundColor: 'rgba(46, 213, 115, 0.1)', border: '1px solid rgba(46, 213, 115, 0.4)',
+    borderRadius: '8px', marginBottom: '25px', textAlign: 'center'
   },
-  successText: {
-    color: '#2ed573',
-    fontWeight: 'bold',
-    fontSize: '14px'
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px'
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#d0d0d0'
-  },
-  dynamicLabel: {
-    color: '#00a8ff',
-    fontWeight: 'bold'
-  },
-  slider: {
-    width: '100%',
-    cursor: 'pointer'
-  },
+  successText: { color: '#2ed573', fontWeight: 'bold', fontSize: '14px' },
+  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  label: { fontSize: '14px', fontWeight: '600', color: '#d0d0d0' },
+  dynamicLabel: { color: '#00a8ff', fontWeight: 'bold' },
+  slider: { width: '100%', cursor: 'pointer' },
   textarea: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '8px',
-    color: '#ffffff',
-    fontSize: '14px',
-    resize: 'vertical'
+    width: '100%', padding: '12px', backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '8px', color: '#ffffff', fontSize: '14px', resize: 'vertical'
   },
   submitBtn: {
-    backgroundColor: '#00a8ff',
-    color: '#ffffff',
-    border: 'none',
-    padding: '15px',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    marginTop: '10px',
+    backgroundColor: '00a8ff', color: '#ffffff', border: 'none', padding: '15px',
+    borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px',
     boxShadow: '0 4px 15px rgba(0, 168, 255, 0.3)'
   }
 };
