@@ -20,35 +20,40 @@ const ReviewForm = ({ beachName, lat, lon, onReviewSubmitted }) => {
   };
 
   useEffect(() => {
-    console.log("Checking geolocation for beach:", beachName, lat, lon);
-    
+    console.log("Beach Props received -> Name:", beachName, "Lat:", lat, "Lon:", lon);
+
+    if (!lat || !lon) {
+      // If coordinates are missing, fail safe and block
+      setLocationStatus('failed');
+      setDistanceKm(null);
+      return;
+    }
+
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const userLat = position.coords.latitude;
           const userLon = position.coords.longitude;
+          console.log("User GPS Location -> Lat:", userLat, "Lon:", userLon);
 
-          if (!lat || !lon) {
-            // If props are missing, fail safe
-            setLocationStatus('failed');
-            setDistanceKm(999);
-            return;
-          }
+          const beachLat = parseFloat(lat);
+          const beachLon = parseFloat(lon);
 
-          const dist = calculateDistance(userLat, userLon, lat, lon);
-          setDistanceKm(Math.round(dist));
-          console.log("Calculated distance from user to beach:", Math.round(dist), "km");
+          const dist = calculateDistance(userLat, userLon, beachLat, beachLon);
+          const roundedDist = Math.round(dist);
+          setDistanceKm(roundedDist);
+          console.log("Calculated Distance:", roundedDist, "km");
 
-          // STRICT CHECK: Must be within 5 kilometers
-          if (dist > 5) {
+          // STRICT CHECK: Must be within 5 km to pass geofence
+          if (roundedDist > 5) {
             setLocationStatus('failed');
           } else {
             setLocationStatus('verified');
           }
         },
         (error) => {
-          console.error("Geolocation error:", error);
-          // If user blocks location or it fails, BLOCK them for security demonstration
+          console.error("Geolocation permission denied or error:", error);
+          // If GPS fails or is denied, block for security demo
           setLocationStatus('failed');
           setDistanceKm(null);
         },
@@ -67,20 +72,20 @@ const ReviewForm = ({ beachName, lat, lon, onReviewSubmitted }) => {
   return (
     <div style={styles.container}>
       
-      {/* STATE 1: Checking */}
+      {/* STATE 1: Checking GPS */}
       {locationStatus === 'checking' && (
         <div style={styles.statusBox}>
           <div style={styles.loadingPulse}></div>
-          <span style={styles.statusText}>Verifying GPS Coordinates & Geofence...</span>
+          <span style={styles.statusText}>Requesting GPS & Verifying Geofence...</span>
         </div>
       )}
 
-      {/* STATE 2: Blocked by Geofence */}
+      {/* STATE 2: Geofence Blocked (Distance > 5km) */}
       {locationStatus === 'failed' && (
         <div style={styles.errorBox}>
           <h4 style={styles.errorTitle}>Geofence Verification Failed</h4>
           <p style={styles.errorText}>
-            Security Protocol: You are <strong style={{color: '#ff3b30'}}>{distanceKm !== null ? `${distanceKm} km` : 'too far'}</strong> away from {beachName}. To prevent spam and fake data, live reports require you to be within 5km of the coast.
+            Security Protocol Active: You are approximately <strong style={{color: '#ff3b30'}}>{distanceKm !== null ? `${distanceKm} km` : 'a long distance'}</strong> away from {beachName}. You must be within 5 km of the coast to submit live reports.
           </p>
           <button 
             style={styles.bypassBtn} 
@@ -91,11 +96,11 @@ const ReviewForm = ({ beachName, lat, lon, onReviewSubmitted }) => {
         </div>
       )}
 
-      {/* STATE 3: Unlocked */}
+      {/* STATE 3: Verified & Form Unlocked */}
       {locationStatus === 'verified' && (
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.successBox}>
-            <span style={styles.successText}>GPS Verified: Within allowed range of {beachName}.</span>
+            <span style={styles.successText}>Location Verified: Within allowed range of {beachName}.</span>
           </div>
 
           <div style={styles.inputGroup}>
@@ -170,7 +175,7 @@ const styles = {
     border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '8px', color: '#ffffff', fontSize: '14px', resize: 'vertical'
   },
   submitBtn: {
-    backgroundColor: '00a8ff', color: '#ffffff', border: 'none', padding: '15px',
+    backgroundColor: '#00a8ff', color: '#ffffff', border: 'none', padding: '15px',
     borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px',
     boxShadow: '0 4px 15px rgba(0, 168, 255, 0.3)'
   }
