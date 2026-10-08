@@ -8,6 +8,26 @@ const EmergencySOS = ({ beachName, lat, lon }) => {
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
+  // 🔥 NEW: Smart Lifeguard Detection Logic
+  const getLifeguardStatus = (name) => {
+    if (!name) return { text: "Unknown Status", color: "#a0a0a0" };
+    
+    const lowerName = name.toLowerCase();
+    
+    // List of famous/commercial beaches that typically have lifeguards
+    const commercialBeaches = ['baga', 'calangute', 'anjuna', 'candolim', 'juhu', 'marina', 'colva', 'palolem', 'kovalam'];
+    
+    const isCommercial = commercialBeaches.some(beach => lowerName.includes(beach));
+    
+    if (isCommercial) {
+      return { text: "Drishti Marine (Active)", color: "#00a8ff" }; // Safe Blue
+    } else {
+      return { text: "Unmanned - No Lifeguard", color: "#ff3b30" }; // Warning Red
+    }
+  };
+
+  const lifeguardStatus = getLifeguardStatus(beachName);
+
   return (
     <>
       {/* Floating SOS Button */}
@@ -35,10 +55,15 @@ const EmergencySOS = ({ beachName, lat, lon }) => {
                 <span style={styles.contactLabel}>Ambulance / Medical:</span>
                 <a href="tel:108" style={styles.contactNumber}>108</a>
               </div>
+              
+              {/* 🔥 NEW: Dynamic Lifeguard Display */}
               <div style={styles.contactItem}>
                 <span style={styles.contactLabel}>Lifeguard Command:</span>
-                <span style={styles.contactNumber}>VHF CH-16 (Active)</span>
+                <span style={{ ...styles.contactNumber, color: lifeguardStatus.color }}>
+                  {lifeguardStatus.text}
+                </span>
               </div>
+              
             </div>
 
             <button style={styles.shareButton} onClick={handleShareLocation}>
