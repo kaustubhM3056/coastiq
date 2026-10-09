@@ -42,7 +42,7 @@ function BeachDetails({ bsiData, onBackToHome }) {
         backgroundColor: 'rgba(15, 23, 42, 0.65)', zIndex: 1
       }}></div>
 
-      {/* Floating SOS Widget (Sits in bottom right corner) */}
+      {/* Floating SOS Widget */}
       <EmergencySOS beachName={bsiData.city} lat={bsiData.lat} lon={bsiData.lon} />
 
       <div style={{ 
@@ -66,13 +66,15 @@ function BeachDetails({ bsiData, onBackToHome }) {
         {/* RIGHT SIDE: Dynamic Content */}
         <div style={{ flex: 1 }}>
           
-          {/* Smart CoastIQ Dashboard Widgets */}
-          <LiveWeatherWidget lat={bsiData.lat} lon={bsiData.lon} />
-          <CrowdCleanlinessRadar beachName={bsiData.city} />
-          <SmartPackingList beachName={bsiData.city} />
-          
-          {/* Main Tab Content */}
-          {activeTab === "overview" && <Overview bsiData={bsiData} />}
+          {/* 🔥 THE FIX: Grouping the widgets so they ONLY show on the Overview tab */}
+          {activeTab === "overview" && (
+            <>
+              <LiveWeatherWidget lat={bsiData.lat} lon={bsiData.lon} />
+              <CrowdCleanlinessRadar beachName={bsiData.city} />
+              <SmartPackingList beachName={bsiData.city} />
+              <Overview bsiData={bsiData} />
+            </>
+          )}
           
           {activeTab === "nearby" && <NearbyPlaces beachName={bsiData.city} />}
           
@@ -122,7 +124,6 @@ function BeachDetails({ bsiData, onBackToHome }) {
                   
                 </div>
               </div>
-
             </div>
           )}
 
@@ -158,7 +159,6 @@ function BeachDetails({ bsiData, onBackToHome }) {
                 <div style={styles.innerGlassPanel}>
                   <h3 style={{ marginTop: 0, color: 'white', marginBottom: '15px' }}>Submit Your Review</h3>
                   
-                  {/* Connected ReviewForm passing lat and lon for Geofencing */}
                   <ReviewForm 
                     beachName={bsiData.city} 
                     lat={bsiData.lat}
